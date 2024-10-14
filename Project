@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Function to display usage information
+function usage() {
+  echo "Usage: $0 [OPTIONS] FILE1 FILE2 "
+  echo "A script to combine multiple text files into a single output file."
+  echo "Options:"
+  echo "  -o OUTPUT_FILE   Specify the output file (required)"
+  echo "  -h               Display this help message"
+  exit 1
+}
+
+# Ensure at least one argument is provided
+if [[ $# -eq 0 ]]; then
+  usage
+fi
+
+# Initialize variables
+OUTPUT_FILE=""
+
+# Parse options
+while getopts ":o:h" opt; do
+  case $opt in
+    o)
+      OUTPUT_FILE="$OPTARG"
+      ;;
+    h)
+      usage
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      usage
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      usage
+      ;;
+  esac
+done
+
+# Remove processed options from arguments
+shift $((OPTIND - 1))
+
+# Ensure the output file is specified
+if [[ -z "$OUTPUT_FILE" ]]; then
+  echo "Error: No output file specified."
+  usage
+fi
+
+# Ensure at least two input files are provided
+if [[ $# -lt 2 ]]; then
+  echo "Error: You must provide at least two text files to concatenate."
+  usage
+fi
+
+    # Check if each input file exists (Regex)
+for file in "$@"; do
+  if [[ ! "$file" =~ \.txt$ ]]; then
+    echo "Error: File '$file' does not have a .txt extension."
+    exit 1
+  fi
+done
+
+#  Concatenate the input files into the output file
+echo "Concatenating files into '$OUTPUT_FILE'..."
+cat "$@" > "$OUTPUT_FILE"
+
+# Check if the concatenation was successful
+if [[ $? -eq 0 ]]; then
+  echo "Successfully concatenated files into '$OUTPUT_FILE'."
+else
+  echo "Error: Failed to concatenate files."
+  exit 1
+fi
